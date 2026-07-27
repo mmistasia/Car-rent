@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Skyways Technics - Vehicle Fleet Management</title>
+
+  <!-- Skyways "S" Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23041E42'/><text x='50' y='72' font-family='sans-serif' font-weight='900' font-size='70' fill='%23FFFFFF' text-anchor='middle'>S</text></svg>">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700;800&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Animated Splash Screen -->
+  <div id="splash-screen">
+    <div class="splash-logo-container">
+      <div class="splash-badge">S</div>
+      <div class="splash-title">Skyways Technics</div>
+      <div class="splash-subtitle">Fleet Management</div>
+    </div>
+    <div class="loader-bar">
+      <div class="loader-progress"></div>
+    </div>
+  </div>
+
+  <!-- Mobile App Frame -->
+  <div class="app-frame">
+    <!-- Header Banner -->
+    <header>
+      <div class="brand-logo-text">
+        <div class="header-logo-icon">S</div>
+        SKYWAYS <span style="opacity:0.7; font-weight:400;">TECHNICS</span>
+      </div>
+      <button class="admin-btn" onclick="openAdminPortal()">Admin Portal</button>
+    </header>
+
+    <!-- Main Fleet Dashboard -->
+    <main class="content-area">
+      <div class="card">
+        <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Select Fleet Vehicle</span>
+        <div style="margin-top:4px;">
+          <select id="vehicle-dropdown" class="vehicle-select" onchange="changeVehicle(this.value)"></select>
+        </div>
+        <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size:0.85rem; color:var(--text-muted);" id="disp-model-name">...</span>
+          <span id="disp-status-badge" class="status-badge available">Available</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Vehicle Details</h3>
+        <div class="heading-separator"></div>
+        <div class="data-row"><span class="data-label">Next Scheduled Service</span><span class="data-value" id="disp-service-date">-</span></div>
+        <div class="data-row"><span class="data-label">Current Odometer</span><span class="data-value" id="disp-mileage">-</span></div>
+        <div class="data-row"><span class="data-label">Last Driver</span><span class="data-value" id="disp-prev-user">-</span></div>
+      </div>
+
+      <div class="card" style="flex:1; overflow-y:auto;">
+        <h3>Upcoming Reservations</h3>
+        <div class="heading-separator"></div>
+        <div id="upcoming-trips-container"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bottom-actions">
+        <button class="btn btn-primary" onclick="openBookingModal()">
+          🚘 Book Vehicle
+        </button>
+        <button class="btn btn-secondary" onclick="openReturnModal()">
+          🔑 Return Vehicle
+        </button>
+      </div>
+    </main>
+
+    <!-- UNIFIED BOOKING MODAL -->
+    <div id="booking-modal" class="overlay">
+      <div class="modal-card">
+        <div class="tab-step-indicator">
+          <div id="step-dot-1" class="step-dot active"></div>
+          <div id="step-dot-2" class="step-dot"></div>
+        </div>
+
+        <!-- Step 1: Booking & Driver Info -->
+        <div id="booking-step-1">
+          <h2>Vehicle Booking & Driver</h2>
+          <div class="heading-separator"></div>
+
+          <div class="form-group">
+            <label>Selected Vehicle</label>
+            <input type="text" id="book-selected-car" class="form-control" readonly style="background:#F1F5F9; font-weight:700;">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="book-start-date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="book-end-date" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Trip Purpose / Destination</label>
+            <input type="text" id="book-destination" class="form-control" placeholder="e.g. Hangar Site Inspection">
+          </div>
+
+          <div class="form-group">
+            <label>Driver Full Name</label>
+            <input type="text" id="driver-name" class="form-control" placeholder="Driver's Full Name">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label>Staff ID</label>
+              <input type="text" id="driver-staff-id" class="form-control" placeholder="e.g. ST-4022">
+            </div>
+            <div class="form-group">
+              <label>IC / Passport</label>
+              <input type="text" id="driver-id" class="form-control" placeholder="ID Number">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Driver Email (for confirmation)</label>
+            <input type="email" id="driver-email" class="form-control" placeholder="name@skywaystechnics.com">
+          </div>
+
+          <div class="form-group">
+            <label>Driver's License Photo</label>
+            <div class="preview-box">
+              <img id="license-preview" style="display:none;">
+              <span id="license-placeholder" style="color:var(--text-muted); font-size:0.8rem;">No photo uploaded</span>
+            </div>
+            <input type="file" id="license-file-input" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'license')">
+            <button class="btn btn-secondary" style="padding:8px; font-size:0.8rem; width:100%;" onclick="document.getElementById('license-file-input').click()">📷 Upload License</button>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('booking-modal')">Cancel</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="goToStep2()">Next: Passengers</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Passenger Details -->
+        <div id="booking-step-2" style="display:none;">
+          <h2>Passenger Manifest</h2>
+          <div class="heading-separator"></div>
+
+          <div class="card" style="background:#F8FAFC; padding:12px;">
+            <div class="form-group">
+              <label>Add Passenger</label>
+              <input type="text" id="pass-name" class="form-control" placeholder="Passenger Full Name" style="margin-bottom:8px;">
+              <input type="text" id="pass-id" class="form-control" placeholder="IC / Passport Number">
+            </div>
+            <button class="btn btn-secondary" style="padding:8px; font-size:0.85rem; width:100%;" onclick="addPassenger()">+ Add Passenger</button>
+          </div>
+
+          <div style="margin-top:10px; min-height:80px;">
+            <label style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Passenger List (<span id="pass-count">0</span>/6)</label>
+            <div id="passenger-tags-container" style="margin-top:4px;"></div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn btn-secondary" style="flex:1;" onclick="goToStep1()">Back</button>
+            <button class="btn btn-primary" style="flex:2;" onclick="submitBookingAndRequest()">Submit Reservation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETURN VEHICLE MODAL -->
+    <div id="return-modal" class="overlay">
+      <div class="modal-card">
+        <h2>Return Vehicle</h2>
+        <div class="heading-separator"></div>
+
+        <div class="form-group">
+          <label>Selected Vehicle</label>
+          <input type="text" id="return-selected-car" class="form-control" readonly style="background:#F1F5F9; font-weight:700;">
+        </div>
+
+        <div class="data-row" style="margin-bottom:12px;">
+          <span class="data-label">Starting Odometer:</span>
+          <span class="data-value" id="return-start-mileage">0 km</span>
+        </div>
+
+        <div class="form-group">
+          <label>Returned Odometer Reading (km)</label>
+          <input type="number" id="return-mileage-input" class="form-control" placeholder="Current mileage reading">
+        </div>
+
+        <div class="form-group">
+          <label>Dashboard Odometer Photo</label>
+          <div class="preview-box">
+            <img id="odometer-preview" style="display:none;">
+            <span id="odometer-placeholder" style="color:var(--text-muted); font-size:0.8rem;">Upload odometer photo</span>
+          </div>
+          <input type="file" id="odometer-file-input" accept="image/*" style="display:none;" onchange="handleFileUpload(event, 'odometer')">
+          <button class="btn btn-secondary" style="padding:8px; font-size:0.8rem; width:100%;" onclick="document.getElementById('odometer-file-input').click()">📷 Snap Odometer Photo</button>
+        </div>
+
+        <div class="form-group">
+          <label>Vehicle Condition</label>
+          <select id="return-condition" class="form-control" onchange="toggleDefectNotes(this.value)">
+            <option value="Good Condition">Good Condition (No Issues)</option>
+            <option value="Minor Issue">Minor Issue (e.g. Needs Cleaning, Low Fuel)</option>
+            <option value="Defect / Damage">Damage / Fault Detected</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="defect-notes-group" style="display:none;">
+          <label>Issue Details</label>
+          <input type="text" id="return-defect-notes" class="form-control" placeholder="Describe issue...">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('return-modal')">Cancel</button>
+          <button class="btn btn-primary" style="flex:2;" onclick="submitVehicleReturn()">Confirm Return</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="admin-login-modal" class="overlay">
+      <div class="modal-card">
+        <h2>Admin Authentication</h2>
+        <div class="heading-separator"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="admin-user-input" class="form-control" value="admin">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="admin-pass-input" class="form-control" placeholder="Enter password">
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Default password: <b>skyways123</b></p>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('admin-login-modal')">Cancel</button>
+          <button class="btn btn-primary" style="flex:1;" onclick="processAdminLogin()">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="admin-panel-modal" class="overlay">
+      <div class="modal-card">
+        <div style="display:flex; justify-style:space-between; align-items:center;">
+          <h2>Fleet Control</h2>
+          <button class="btn btn-danger" style="padding:4px 10px; font-size:0.75rem;" onclick="logoutAdmin()">Logout</button>
+        </div>
+        <div class="heading-separator"></div>
+
+        <button class="btn btn-success" style="padding:10px; font-size:0.85rem; width:100%; margin-bottom:16px;" onclick="exportToCSV()">📥 Download Audit Trail Log (.csv)</button>
+
+        <h3>Pending Requests</h3>
+        <div id="pending-requests-container" style="margin-top:8px; margin-bottom:16px;"></div>
+
+        <h3>Audit Logs</h3>
+        <div id="usage-log-container" style="max-height:180px; overflow-y:auto;"></div>
+
+        <div style="margin-top:16px;">
+          <button class="btn btn-secondary" style="width:100%;" onclick="closeModal('admin-panel-modal')">Close Panel</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
